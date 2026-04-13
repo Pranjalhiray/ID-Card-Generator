@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8"/>
+<title>Dashboard – ID Card System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0f3460;--accent:#00b4d8;--accent2:#0077b6;--bg:#f0f4f8;--white:#fff;--text:#1a1a2e;--muted:#64748b;--success:#16a34a;--warning:#d97706;--danger:#dc2626}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Navbar */
+nav{background:linear-gradient(135deg,var(--navy),var(--accent2));padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(15,52,96,.3);position:sticky;top:0;z-index:100}
+.nav-brand{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px}
+.nav-brand span{background:rgba(255,255,255,.2);border-radius:8px;padding:4px 8px;font-size:20px}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-user{color:rgba(255,255,255,.8);font-size:13px}
+.nav-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.nav-btn-outline{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.nav-btn-outline:hover{background:rgba(255,255,255,.25)}
+.nav-btn-danger{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
+.nav-btn-danger:hover{background:rgba(255,255,255,.2)}
+.nav-btn-admin{background:#e94560;color:#fff}
+.nav-btn-admin:hover{background:#c0392b}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:40px 24px}
+
+/* Alerts */
+.alert{padding:14px 18px;border-radius:12px;font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:10px;animation:slideDown .3s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.alert-success{background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0}
+.alert-error{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+
+/* Welcome */
+.welcome{margin-bottom:32px}
+.welcome h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text)}
+.welcome p{color:var(--muted);font-size:15px;margin-top:4px}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+
+/* Cards */
+.card{background:var(--white);border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);overflow:hidden}
+.card-header{padding:20px 24px 0}
+.card-body{padding:24px}
+.card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
+
+/* Profile card */
+.profile-card{text-align:center;padding:32px 24px}
+.avatar{width:96px;height:96px;border-radius:50%;margin:0 auto 16px;overflow:hidden;border:4px solid var(--accent);box-shadow:0 4px 16px rgba(0,180,216,.3);position:relative}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar-placeholder{width:100%;height:100%;background:linear-gradient(135deg,var(--navy),var(--accent));display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff}
+.profile-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
+.profile-email{font-size:13px;color:var(--muted);margin-top:4px}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-top:12px}
+.status-pending{background:#fef9c3;color:#92400e;border:1px solid #fde68a}
+.status-approved{background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0}
+.status-rejected{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+.status-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+/* Stat cards */
+.stat-card{border-radius:16px;padding:20px;color:#fff;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,.1);border-radius:50%}
+.stat-blue{background:linear-gradient(135deg,var(--navy),var(--accent2))}
+.stat-teal{background:linear-gradient(135deg,#0d9488,#14b8a6)}
+.stat-orange{background:linear-gradient(135deg,#d97706,#f59e0b)}
+.stat-card .num{font-family:'Syne',sans-serif;font-size:32px;font-weight:800}
+.stat-card .lbl{font-size:12px;opacity:.85;margin-top:4px}
+
+/* ID Card section */
+.id-card-display{background:linear-gradient(135deg,var(--navy) 0%,var(--accent2) 100%);border-radius:16px;padding:28px;color:#fff;position:relative;overflow:hidden;margin-bottom:16px}
+.id-card-display::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:rgba(255,255,255,.08);border-radius:50%}
+.id-card-display::after{content:'';position:absolute;bottom:-30px;left:30px;width:100px;height:100px;background:rgba(255,255,255,.05);border-radius:50%}
+.card-num{font-size:12px;opacity:.7;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.card-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.card-meta{display:flex;gap:24px;margin-top:16px;font-size:12px;opacity:.8}
+.download-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,var(--navy),var(--accent2));color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;transition:all .2s}
+.download-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,119,182,.4)}
+.pending-box{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:16px;padding:28px;text-align:center}
+.pending-box .icon{font-size:40px;margin-bottom:12px}
+.pending-box h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#92400e}
+.pending-box p{font-size:13px;color:#b45309;margin-top:6px}
+
+/* Details grid */
+.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.detail-item{background:#f8fafc;border-radius:10px;padding:12px 16px}
+.detail-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600}
+.detail-value{font-size:14px;font-weight:500;color:var(--text);margin-top:3px}
+.edit-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:#f0f9ff;color:var(--accent2);border-radius:10px;text-decoration:none;font-weight:600;font-size:13px;border:2px solid #bae6fd;transition:all .2s}
+.edit-btn:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand"><span>🪪</span> ID Card System</div>
+  <div class="nav-right">
+    <span class="nav-user" sec:authentication="name"></span>
+    <a th:href="@{/profile}" class="nav-btn nav-btn-outline">✏️ Profile</a>
+    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/panel}" class="nav-btn nav-btn-admin">⚙️ Admin</a>
+    <form th:action="@{/logout}" method="post" style="margin:0">
+      <button class="nav-btn nav-btn-danger">Sign Out</button>
+    </form>
+  </div>
+</nav>
+
+<div class="container">
+  <div th:if="${success}" class="alert alert-success">✅ <span th:text="${success}"></span></div>
+  <div th:if="${error}"   class="alert alert-error">❌ <span th:text="${error}"></span></div>
+
+  <div class="welcome">
+    <h2>Welcome back, <span th:text="${user.fullName}">User</span>! 👋</h2>
+    <p>Here's your ID card dashboard</p>
+  </div>
+
+  <div class="grid-2">
+    <!-- Left: profile -->
+    <div>
+      <div class="card">
+        <div class="profile-card">
+          <div class="avatar">
+            <img th:if="${user.photoPath != null}" th:src="@{'/uploads/' + ${user.photoPath}}" alt="photo"/>
+            <div th:unless="${user.photoPath != null}" class="avatar-placeholder">👤</div>
+          </div>
+          <div class="profile-name" th:text="${user.fullName}"></div>
+          <div class="profile-email" th:text="${user.email}"></div>
+          <div>
+            <span th:if="${user.status.name() == 'APPROVED'}"  class="status-badge status-approved"><span class="status-dot"></span>Approved</span>
+            <span th:if="${user.status.name() == 'PENDING'}"   class="status-badge status-pending"><span class="status-dot"></span>Pending Approval</span>
+            <span th:if="${user.status.name() == 'REJECTED'}"  class="status-badge status-rejected"><span class="status-dot"></span>Rejected</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: ID Card + Details -->
+    <div>
+      <!-- ID Card section -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header" style="padding:20px 24px 16px">
+          <span class="card-title">🪪 Your ID Card</span>
+        </div>
+        <div class="card-body">
+
+          <!-- Approved with card -->
+          <div th:if="${user.status.name() == 'APPROVED' and user.idCard != null}">
+            <div class="id-card-display">
+              <div class="card-num">Card No: <span th:text="${user.idCard.cardNumber}"></span></div>
+              <div class="card-name" th:text="${user.fullName}"></div>
+              <div class="card-meta">
+                <div>
+                  <div style="opacity:.6;font-size:11px">ISSUED</div>
+                  <div th:text="${#temporals.format(user.idCard.issuedDate,'dd MMM yyyy')}"></div>
+                </div>
+                <div>
+                  <div style="opacity:.6;font-size:11px">VALID TILL</div>
+                  <div th:text="${#temporals.format(user.idCard.expiryDate,'dd MMM yyyy')}"></div>
+                </div>
+                <div>
+                  <div style="opacity:.6;font-size:11px">STATUS</div>
+                  <div th:text="${user.idCard.cardStatus}"></div>
+                </div>
+              </div>
+            </div>
+            <a th:href="@{'/idcard/download/' + ${user.idCard.id}}" class="download-btn">
+              ⬇️ Download ID Card PDF
+            </a>
+          </div>
+
+          <!-- Pending -->
+          <div th:if="${user.status.name() == 'PENDING'}" class="pending-box">
+            <div class="icon">⏳</div>
+            <h3>Awaiting Approval</h3>
+            <p>Your account is under review. You'll receive your ID card once an admin approves your request.</p>
+          </div>
+
+          <!-- Rejected -->
+          <div th:if="${user.status.name() == 'REJECTED'}" class="pending-box" style="background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fecaca">
+            <div class="icon">❌</div>
+            <h3 style="color:#991b1b">Application Rejected</h3>
+            <p style="color:#b91c1c">Your application was rejected. Please contact the administrator for more information.</p>
+          </div>
+
+          <!-- Approved but no card yet -->
+          <div th:if="${user.status.name() == 'APPROVED' and user.idCard == null}" class="pending-box" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#bbf7d0">
+            <div class="icon">✅</div>
+            <h3 style="color:#166534">Approved!</h3>
+            <p style="color:#15803d">Your account is approved. Your ID card is being prepared.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Profile details -->
+      <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 16px">
+          <span class="card-title">👤 Profile Details</span>
+          <a th:href="@{/profile}" class="edit-btn">✏️ Edit</a>
+        </div>
+        <div class="card-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">Department</div>
+              <div class="detail-value" th:text="${user.department ?: '—'}"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Designation</div>
+              <div class="detail-value" th:text="${user.designation ?: '—'}"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Employee ID</div>
+              <div class="detail-value" th:text="${user.employeeId ?: '—'}"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Phone</div>
+              <div class="detail-value" th:text="${user.phoneNumber ?: '—'}"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Blood Group</div>
+              <div class="detail-value" th:text="${user.bloodGroup ?: '—'}"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Organization</div>
+              <div class="detail-value" th:text="${user.organization ?: '—'}"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

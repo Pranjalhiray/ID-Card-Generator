@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<title>Edit Profile – ID Card System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0f3460;--accent:#00b4d8;--accent2:#0077b6;--bg:#f0f4f8;--white:#fff;--text:#1a1a2e;--muted:#64748b}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh}
+nav{background:linear-gradient(135deg,var(--navy),var(--accent2));padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(15,52,96,.3);position:sticky;top:0;z-index:100}
+.nav-brand{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px}
+.nav-brand span{background:rgba(255,255,255,.2);border-radius:8px;padding:4px 8px}
+.back-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;color:#fff;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);transition:all .2s}
+.back-btn:hover{background:rgba(255,255,255,.25)}
+.container{max-width:760px;margin:0 auto;padding:40px 24px}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:8px}
+.page-sub{font-size:14px;color:var(--muted);margin-bottom:32px}
+.alert{padding:14px 18px;border-radius:12px;font-size:14px;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.alert-success{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.alert-error{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.card{background:var(--white);border-radius:20px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:24px}
+.section-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #e2e8f0}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.form-group{margin-bottom:20px}
+label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:7px}
+.input-wrap{position:relative}
+.input-wrap span{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+input,select,textarea{width:100%;padding:12px 13px 12px 40px;border:2px solid #e2e8f0;border-radius:11px;font-size:14px;font-family:'DM Sans',sans-serif;transition:border-color .2s,box-shadow .2s;outline:none;background:#fafafa;color:var(--text)}
+select{cursor:pointer}
+textarea{padding:12px 13px;resize:vertical;min-height:90px}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,180,216,.1);background:#fff}
+
+/* Photo upload */
+.photo-upload{display:flex;align-items:center;gap:24px;padding:20px;background:#f8fafc;border-radius:14px;border:2px dashed #e2e8f0}
+.photo-preview{width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid var(--accent);flex-shrink:0}
+.photo-preview img{width:100%;height:100%;object-fit:cover}
+.photo-preview-placeholder{width:100%;height:100%;background:linear-gradient(135deg,var(--navy),var(--accent));display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff}
+.photo-info h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.photo-info p{font-size:12px;color:var(--muted);margin-bottom:10px}
+.file-input-label{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#fff;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:all .2s}
+.file-input-label:hover{border-color:var(--accent);color:var(--accent)}
+#photoInput{display:none}
+
+/* Buttons */
+.btn-row{display:flex;gap:12px;margin-top:8px}
+.btn-primary{flex:1;padding:14px;background:linear-gradient(135deg,var(--navy),var(--accent2));color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,119,182,.35)}
+.btn-secondary{padding:14px 24px;background:#f1f5f9;color:var(--text);border:2px solid #e2e8f0;border-radius:12px;font-size:15px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;text-decoration:none;display:flex;align-items:center;transition:all .2s}
+.btn-secondary:hover{border-color:var(--navy);color:var(--navy)}
+@media(max-width:600px){.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand"><span>🪪</span> ID Card System</div>
+  <a th:href="@{/dashboard}" class="back-btn">← Back to Dashboard</a>
+</nav>
+
+<div class="container">
+  <div class="page-title">Edit Profile</div>
+  <div class="page-sub">Keep your information up to date for your ID card</div>
+
+  <div th:if="${success}" class="alert alert-success">✅ <span th:text="${success}"></span></div>
+  <div th:if="${error}"   class="alert alert-error">❌ <span th:text="${error}"></span></div>
+
+  <form th:action="@{/profile}" th:object="${user}" method="post" enctype="multipart/form-data">
+
+    <!-- Photo -->
+    <div class="card">
+      <div class="section-title">Profile Photo</div>
+      <div class="photo-upload">
+        <div class="photo-preview">
+          <img th:if="${user.photoPath != null}" th:src="@{'/uploads/' + ${user.photoPath}}" id="photoImg"/>
+          <div th:unless="${user.photoPath != null}" class="photo-preview-placeholder" id="photoPlaceholder">👤</div>
+        </div>
+        <div class="photo-info">
+          <h4>Upload your photo</h4>
+          <p>JPG, PNG up to 5MB. Clear face photo recommended.</p>
+          <label class="file-input-label" for="photoInput">📷 Choose Photo</label>
+          <input type="file" id="photoInput" name="photo" accept="image/*"
+                 onchange="previewPhoto(this)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Info -->
+    <div class="card">
+      <div class="section-title">Personal Information</div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <div class="input-wrap"><span>👤</span>
+          <input type="text" th:field="*{fullName}" placeholder="Your full name"/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <div class="input-wrap"><span>🎂</span>
+            <input type="date" th:field="*{dateOfBirth}"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Blood Group</label>
+          <div class="input-wrap"><span>🩸</span>
+            <select th:field="*{bloodGroup}">
+              <option value="">— Select —</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option>
+              <option>O+</option><option>O-</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <div class="input-wrap"><span>📱</span>
+            <input type="text" th:field="*{phoneNumber}" placeholder="10-digit number" maxlength="10"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Employee ID</label>
+          <div class="input-wrap"><span>🆔</span>
+            <input type="text" th:field="*{employeeId}" placeholder="e.g. EMP001"/>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <textarea th:field="*{address}" placeholder="Your full address"></textarea>
+      </div>
+    </div>
+
+    <!-- Work Info -->
+    <div class="card">
+      <div class="section-title">Work / Study Information</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Organization</label>
+          <div class="input-wrap"><span>🏢</span>
+            <input type="text" th:field="*{organization}" placeholder="Company or School name"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <div class="input-wrap"><span>🏷️</span>
+            <input type="text" th:field="*{department}" placeholder="e.g. Computer Science"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Designation / Role</label>
+          <div class="input-wrap"><span>💼</span>
+            <input type="text" th:field="*{designation}" placeholder="e.g. Software Engineer"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <a th:href="@{/dashboard}" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">Save Changes →</button>
+    </div>
+  </form>
+</div>
+
+<script>
+function previewPhoto(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const placeholder = document.getElementById('photoPlaceholder');
+      const existing = document.getElementById('photoImg');
+      if (placeholder) {
+        placeholder.style.display = 'none';
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.id = 'photoImg';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+        placeholder.parentNode.appendChild(img);
+      } else if (existing) {
+        existing.src = e.target.result;
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+</body>
+</html>
