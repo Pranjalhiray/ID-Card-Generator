@@ -18,6 +18,9 @@ public class AdminService {
 
     @Transactional
     public void approveUser(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
         user.setStatus(User.Status.APPROVED);
@@ -27,6 +30,9 @@ public class AdminService {
 
     @Transactional
     public void rejectUser(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
         user.setStatus(User.Status.REJECTED);
@@ -35,6 +41,9 @@ public class AdminService {
 
     @Transactional
     public void deleteUser(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         userRepository.deleteById(userId);
     }
 }

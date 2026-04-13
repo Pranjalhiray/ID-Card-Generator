@@ -1,5 +1,19 @@
 package com.idcard.service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.idcard.entity.IDCard;
 import com.idcard.entity.User;
 import com.idcard.repository.IDCardRepository;
@@ -7,20 +21,17 @@ import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.SolidBorder;
-import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.*;
-import java.nio.file.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 
 @Service
 public class IDCardService {
@@ -35,6 +46,9 @@ public class IDCardService {
     }
 
     public byte[] getPDFBytes(Long cardId) throws IOException {
+        if (cardId == null) {
+            throw new IllegalArgumentException("Card ID cannot be null");
+        }
         IDCard card = idCardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found: " + cardId));
         Path pdfPath = Paths.get(card.getPdfPath());
@@ -60,7 +74,7 @@ public class IDCardService {
             card.setPdfPath(pdfRelPath);
             card.setCardStatus(IDCard.CardStatus.ACTIVE);
             return idCardRepository.save(card);
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             throw new RuntimeException("ID card generation failed: " + e.getMessage(), e);
         }
     }
